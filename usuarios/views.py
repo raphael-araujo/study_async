@@ -1,8 +1,9 @@
 from django.contrib import auth, messages
+from django.contrib.auth.models import User
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, redirect
 
-from usuarios.forms import CadastroForm
+from usuarios.forms import CadastroForm, LoginForm
 
 
 def cadastro(request: HttpRequest) -> HttpResponse:
@@ -24,3 +25,40 @@ def cadastro(request: HttpRequest) -> HttpResponse:
         form = CadastroForm()
 
     return render(request, "cadastro.html", {"form": form})
+
+
+def login(request: HttpRequest) -> HttpResponse:
+    if request.method == "POST":
+        form = LoginForm(request.POST)
+
+        if form.is_valid():
+            userinput = form.cleaned_data["userinput"]
+            senha = form.cleaned_data["password"]
+
+            # Login com username ou e-mail:
+            try:
+                user = User.objects.get(email=userinput)
+                account = auth.authenticate(request, username=user.username, password=senha)
+
+                if not account:
+                    messages.error(request, message="login ou senha inválidos.")
+                    return redirect(to="login")
+
+                auth.login(request, account)
+                return redirect(to="novo_flashcard")
+
+            except:
+                account = auth.authenticate(request, username=userinput, password=senha)
+
+                if not account:
+                    messages.error(request, message="login ou senha inválidos.")
+                    return redirect(to="login")
+
+                auth.login(request, account)
+                return redirect(to="novo_flashcard")
+    else:
+        if request.user.is_authenticated:
+            return redirect(to="novo_flashcard")
+        form = LoginForm()
+
+    return render(request, "login.html", {"form": form})
