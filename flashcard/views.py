@@ -1,10 +1,9 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render, redirect
-
-from .forms import FlashcardForm
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import Flashcard, Categoria
+from .forms import FlashcardForm
 
 
 @login_required(login_url='login')
@@ -38,3 +37,11 @@ def novo_flashcard(request: HttpRequest) -> HttpResponse:
         'flashcards': flashcards,
     }
     return render(request, 'novo_flashcard.html', context)
+
+
+@login_required(login_url='login')
+def excluir_flashcard(request: HttpRequest, id_flashcard: int) -> HttpResponse:
+    flashcard = get_object_or_404(Flashcard, id=id_flashcard, user=request.user)
+    flashcard.delete()
+    messages.warning(request, 'Flashcard excluído com sucesso')
+    return redirect(to='novo_flashcard')
