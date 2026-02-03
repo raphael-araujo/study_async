@@ -2,8 +2,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Flashcard, Categoria
-from .forms import FlashcardForm
+from .models import Flashcard, Categoria, FlashcardDesafio
+from .forms import FlashcardForm, DesafioForm
 
 
 @login_required(login_url='login')
@@ -45,3 +45,50 @@ def excluir_flashcard(request: HttpRequest, id_flashcard: int) -> HttpResponse:
     flashcard.delete()
     messages.warning(request, 'Flashcard excluído com sucesso')
     return redirect(to='novo_flashcard')
+
+
+@login_required(login_url='login')
+def iniciar_desafio(request: HttpRequest) -> HttpResponse:
+    if request.method == 'POST':
+        form = DesafioForm(request.POST)
+        if form.is_valid():
+            desafio = form.save(commit=False)
+            desafio.user = request.user
+            desafio.save()
+
+        flashcards = (
+            Flashcard.objects.filter(user=request.user)
+            .filter(dificuldade=form.cleaned_data['dificuldade'])
+            .filter(categoria_id__in=form.cleaned_data['categoria'])
+            .order_by("?")
+        )
+
+        if flashcards.count() < int(form.cleaned_data['quantidade_perguntas']):
+            messages.error(
+                request,
+                f"A quantidade de questões é maior que a quantidade de flashcards disponíveis ({flashcards.count()})."
+            )
+            return redirect(to='iniciar_desafio')
+
+        flashcards = flashcards[: int(form.cleaned_data['quantidade_perguntas'])]
+
+        for f in flashcards:
+            flashcard_desafio = FlashcardDesafio(
+                flashcard=f,
+            )
+            flashcard_desafio.save()
+            desafio.flashcards.add(flashcard_desafio)
+
+        desafio.save()
+
+        return redirect(to='desafio')
+
+    form = DesafioForm()
+    categorias = Categoria.objects.all()
+    dificuldades = Flashcard.DIFICULDADE_CHOICES
+    context = {
+        'form': form,
+        'categorias': categorias,
+        'dificuldades': dificuldades
+    }
+    return render(request, 'iniciar_desafio.html', context)
