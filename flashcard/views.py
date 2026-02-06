@@ -50,40 +50,31 @@ def excluir_flashcard(request: HttpRequest, id_flashcard: int) -> HttpResponse:
 @login_required(login_url='login')
 def iniciar_desafio(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
-        form = DesafioForm(request.POST)
+        form = DesafioForm(request.POST, user=request.user)
+
         if form.is_valid():
             desafio = form.save(commit=False)
             desafio.user = request.user
             desafio.save()
+            desafio.categoria.add(*form.cleaned_data['categoria'])
 
-        flashcards = (
-            Flashcard.objects.filter(user=request.user)
-            .filter(dificuldade=form.cleaned_data['dificuldade'])
-            .filter(categoria_id__in=form.cleaned_data['categoria'])
-            .order_by("?")
-        )
-
-        if flashcards.count() < int(form.cleaned_data['quantidade_perguntas']):
-            messages.error(
-                request,
-                f"A quantidade de questões é maior que a quantidade de flashcards disponíveis ({flashcards.count()})."
+            flashcards = (
+                Flashcard.objects.filter(user=request.user)
+                .filter(dificuldade=form.cleaned_data['dificuldade'])
+                .filter(categoria_id__in=form.cleaned_data['categoria'])
+                .order_by("?")
             )
-            return redirect(to='iniciar_desafio')
+            flashcards = flashcards[: int(form.cleaned_data['quantidade_perguntas'])]
 
-        flashcards = flashcards[: int(form.cleaned_data['quantidade_perguntas'])]
+            for f in flashcards:
+                flashcard_desafio = FlashcardDesafio(flashcard=f)
+                flashcard_desafio.save()
+                desafio.flashcards.add(flashcard_desafio)
 
-        for f in flashcards:
-            flashcard_desafio = FlashcardDesafio(
-                flashcard=f,
-            )
-            flashcard_desafio.save()
-            desafio.flashcards.add(flashcard_desafio)
+            return redirect(to='desafio', id_desafio=desafio.id)
+    else:
+        form = DesafioForm(user=request.user)
 
-        desafio.save()
-
-        return redirect(to='desafio')
-
-    form = DesafioForm()
     categorias = Categoria.objects.all()
     dificuldades = Flashcard.DIFICULDADE_CHOICES
     context = {
