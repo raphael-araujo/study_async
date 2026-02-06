@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Flashcard, Categoria, FlashcardDesafio
+from .models import Flashcard, Categoria, FlashcardDesafio, Desafio
 from .forms import FlashcardForm, DesafioForm
 
 
@@ -83,3 +83,26 @@ def iniciar_desafio(request: HttpRequest) -> HttpResponse:
         'dificuldades': dificuldades
     }
     return render(request, 'iniciar_desafio.html', context)
+
+
+@login_required(login_url='login')
+def listar_desafios(request: HttpRequest) -> HttpResponse:
+    desafios = Desafio.objects.filter(user=request.user)
+    categorias = Categoria.objects.all()
+    dificuldades = Flashcard.DIFICULDADE_CHOICES
+
+    filtro_categoria = request.GET.get("categoria")
+    filtro_dificuldade = request.GET.get("dificuldade")
+
+    if filtro_categoria:
+        desafios = desafios.filter(categoria=filtro_categoria)
+    if filtro_dificuldade:
+        desafios = desafios.filter(dificuldade=filtro_dificuldade)
+
+    context = {
+        'desafios': desafios,
+        'categorias': categorias,
+        'dificuldades': dificuldades
+    }
+    return render(request, 'listar_desafios.html', context)
+

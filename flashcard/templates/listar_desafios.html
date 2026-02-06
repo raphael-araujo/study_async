@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block 'title' %}Listar desafios | Study Async{% endblock %}
+
+{% block 'conteudo' %}
+    <div class="container">
+        <br>
+        <br>
+        <div class="row">
+            <div class="col-md">
+                <form action="{% url 'listar_desafios' %}" method="GET">
+                    <label for="" class="form-label">Categoria</label>
+                    <select class="form-select" title="filtro-categoria" name="categoria">
+                        <option value="">
+                            Todas as categorias
+                        </option>
+                        {% for categoria in categorias %}
+                            <option value="{{categoria.id}}">{{categoria.nome}}</option>
+                        {% endfor %}
+                    </select>
+            </div>
+            <div class="col-md">
+                <label for="" class="form-label">Dificuldade</label>
+                <select class="form-select" title="filtro-dificuldade" name="dificuldade">
+                    <option value="">
+                        Todas as dificuldades
+                    </option>
+                    {% for dificuldade in dificuldades %}
+                        <option value="{{dificuldade.0}}">{{dificuldade.1}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md">
+                <br>
+                <input type="submit" value="Filtrar" class="btn-cadastro">
+                </form>
+            </div>
+        </div>
+        <br>
+        <br>
+        <div class="box-listar">
+            {% if desafios %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th scope="col">Desafio</th>
+                            <th scope="col">Titulo</th>
+                            <th scope="col">Dificuldade</th>
+                            <th scope="col">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for desafio in desafios %}
+                            <tr class="linha">
+                                <th><a href="{% url 'desafio' desafio.id %}">{{desafio.id}}</a></th>
+                                <td>{{desafio.titulo}}</td>
+                                <td>{{desafio.get_dificuldade_display}}</td>
+                                <td>{{desafio.status}}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p class="fonte-secundaria">Nenhum desafio encontrado.</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock 'conteudo' %}
