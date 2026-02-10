@@ -43,6 +43,10 @@ def novo_flashcard(request: HttpRequest) -> HttpResponse:
 @login_required(login_url='login')
 def excluir_flashcard(request: HttpRequest, id_flashcard: int) -> HttpResponse:
     flashcard = get_object_or_404(Flashcard, id=id_flashcard, user=request.user)
+
+    if flashcard.user != request.user:
+        raise PermissionDenied()
+
     flashcard.delete()
     messages.warning(request, 'Flashcard excluído com sucesso')
     return redirect(to='novo_flashcard')
