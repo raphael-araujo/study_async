@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block 'title' %}Desafio | Study Async{% endblock  %}
+
+{% block 'conteudo' %}
+    <div class="container">
+        <br>
+        <br>
+        <div class="row">
+            <div class="col-md">
+                <h3 class="fonte-secundaria" >Desafio iniciado</h3>
+                {% for categoria in desafio.categoria.all %}
+                    <span class="badge-categoria">{{categoria.nome}}</span>
+                {% endfor %}
+                <br>
+                <br>
+                <br>
+                {% for flash in desafio.flashcards.all %}
+                    <div class="box-new-flashcard">
+                        <div class="flashcard {{flash.flashcard.css_dificuldade}}">
+
+                            <div class="flashcard-categoria">
+                                {{flash.flashcard.categoria}}
+                            </div>
+                            <br>
+                            <br>
+                            <div class="flashcard-box-item" onclick="flip_card({{flash.id}})">
+                                <p class="flashcard-item">{{flash.flashcard.pergunta}}</p>
+                            </div>
+
+                            {% if not flash.respondido %}
+                                <div class="responder">
+                                    <a href="{% url 'responder_flashcard' flash.id %}?acertou=0&desafio_id={{desafio.id}}">
+                                        <i class='bx bxs-x-square icone-vermelho'></i>
+                                    </a>
+                                    <a href="{% url 'responder_flashcard' flash.id %}?acertou=1&desafio_id={{desafio.id}}">
+                                        <i class='bx bxs-check-square icone-verde'></i>
+                                    </a>
+                                </div>
+                            {% else %}
+                                {% if flash.acertou %}
+                                    <span class="badge bg-success">Acertou</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Errou</span>
+                                {% endif%}
+                            {% endif %}
+                            
+                        </div>
+                        <div class="resposta-flashcard" id="{{flash.id}}">
+                            {{flash.flashcard.resposta}}
+                        </div>
+                    </div>
+                    <br>
+                    <br>
+                {% endfor %}
+            </div>
+            <div class="col-md">
+                <h3 class="fonte-secundaria">Resultado</h3>
+                <p class="fonte-p">Acertos: {{acertos}}</p>
+                <p class="fonte-p">Erros: {{erros}}</p>
+                <p class="fonte-p">Faltantes: {{faltantes}}</p>
+                <br>
+                <a class="btn-cadastro btn-desafio" href="">Relatório detalhado</a>
+            </div>
+        </div>
+    </div>
+{% endblock 'conteudo' %}

@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Flashcard, Categoria, FlashcardDesafio, Desafio
@@ -106,3 +107,39 @@ def listar_desafios(request: HttpRequest) -> HttpResponse:
     }
     return render(request, 'listar_desafios.html', context)
 
+
+@login_required(login_url='login')
+def desafio(request: HttpRequest, id_desafio: int) -> HttpResponse:
+    desafio = get_object_or_404(Desafio, pk=id_desafio)
+
+    if desafio.user != request.user:
+        raise PermissionDenied()
+
+    acertos = (desafio.flashcards.filter(respondido=True, acertou=True).count())
+    erros = (desafio.flashcards.filter(respondido=True, acertou=False).count())
+    faltantes = (desafio.flashcards.filter(respondido=False).count())
+
+    context = {
+        'desafio': desafio,
+        'acertos': acertos,
+        'erros': erros,
+        'faltantes': faltantes
+    }
+
+    return render(request, 'desafio.html', context)
+
+
+@login_required(login_url='login')
+def responder_flashcard(request: HttpRequest, id_flashcard: int) -> HttpResponse:
+    flashcard_desafio = get_object_or_404(FlashcardDesafio, id=id_flashcard)
+    acertou = request.GET.get("acertou")
+    desafio_id = request.GET.get("desafio_id")
+
+    if flashcard_desafio.flashcard.user != request.user:
+        raise PermissionDenied()
+
+    flashcard_desafio.respondido = True
+    flashcard_desafio.acertou = True if acertou == '1' else False
+    flashcard_desafio.save()
+
+    return redirect(to='desafio', id_desafio=desafio_id)
