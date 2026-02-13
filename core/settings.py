@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     # apps:
     'usuarios',
     'flashcard',
+    'apostilas',
     # 3rd apps:
     "widget_tweaks",
 ]
