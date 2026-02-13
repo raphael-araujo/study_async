@@ -9,4 +9,5 @@ urlpatterns = [
     path('listar_desafios/', views.listar_desafios, name='listar_desafios'),
     path('desafio/<int:id_desafio>/', views.desafio, name='desafio'),
     path('responder_flashcard/<int:id_flashcard>/', views.responder_flashcard, name='responder_flashcard'),
+    path('relatorio/<int:id_desafio>/', views.relatorio, name='relatorio'),
 ]

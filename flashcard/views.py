@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
+from django.db.models import Count, Q
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Flashcard, Categoria, FlashcardDesafio, Desafio
@@ -147,3 +148,34 @@ def responder_flashcard(request: HttpRequest, id_flashcard: int) -> HttpResponse
     flashcard_desafio.save()
 
     return redirect(to='desafio', id_desafio=desafio_id)
+
+
+@login_required(login_url='login')
+def relatorio(request: HttpRequest, id_desafio: int) -> HttpResponse:
+    desafio = get_object_or_404(Desafio, pk=id_desafio)
+
+    if desafio.user != request.user:
+        raise PermissionDenied()
+
+    acertos = desafio.flashcards.filter(respondido=True, acertou=True).count()
+    erros = desafio.flashcards.filter(respondido=True, acertou=False).count()
+    dados = [acertos, erros]
+
+    dados2 = (
+        desafio.categoria
+        .annotate(
+            acertos=Count(
+                "flashcard__flashcarddesafio",
+                filter=Q(flashcard__flashcarddesafio__acertou=True)
+            )
+        )
+    )
+    resultado = {c.nome: c.acertos for c in dados2}
+    context = {
+        'desafio': desafio,
+        'dados': dados,
+        'soma_acertos_e_erros': sum(dados),
+        'categorias': list(resultado.keys()),
+        'dados2': list(resultado.values()),
+    }
+    return render(request, 'relatorio.html', context)

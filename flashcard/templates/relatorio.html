@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load static %} 
+
+{% block 'title' %}Relatório | Study Async{% endblock %} 
+
+{% block 'conteudo' %}
+    <div class="container">
+        <br />
+        <br />
+        <div class="row">
+            <div class="col-md">
+                <p class="fonte-secundaria">{{desafio.titulo}}</p>
+                <hr />
+            {% if soma_acertos_e_erros > 0 %}
+                <canvas id="grafico1"></canvas>
+            </div>
+            <div class="col-md">
+                <br /><br /><br /><br />
+                <div style="background-color: white">
+                    <canvas id="grafico2"></canvas>
+                </div>
+            </div>
+            {% else %}
+                <br />
+                <p class="fonte-secundaria" align="center">
+                    Você ainda não respondeu nenhuma questão.
+                </p>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('grafico1');
+
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Acertos', 'Erros'],
+                datasets: [{
+                    label: 'Quantidade ',
+                    data: {{ dados }},
+                    borderWidth: 1
+                }]
+            },
+        });
+    </script>
+    <script>
+        const ctx2 = document.getElementById('grafico2');
+
+        new Chart(ctx2, {
+            type: 'radar',
+            data: {
+                labels: {{ categorias|safe }},
+                datasets: [{
+                    label: 'Quantidade',
+                    data: {{ dados2|safe }},
+                    borderWidth: 1,
+                    fill: true,
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgb(255, 99, 132)',
+                    pointBackgroundColor: 'rgb(255, 99, 132)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgb(255, 99, 132)'
+                }]
+            },
+        });
+    </script>
+{% endblock 'conteudo' %}
