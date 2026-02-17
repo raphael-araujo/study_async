@@ -38,7 +38,7 @@
                         {% for apostila in apostilas %}
                             <tr class="linha">
                                 <td>{{ apostila.titulo }}</td>
-                                <td><a href="{{ apostila.arquivo.url }}" target="_blank" style="color: black; text-decoration: none;" class="btn-cadastro">Abrir</a></td>
+                                <td><a href="{% url 'apostila' apostila.id %}" target="_blank" style="color: black; text-decoration: none;" class="btn-cadastro">Abrir</a></td>
                             </tr>
                         {% endfor %}
                     </tbody>
