@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block 'title' %}Adicionar apostilas | Study Async{% endblock %}
+
+{% block 'conteudo' %}
+    <div class="container">
+        <br><br>
+        <div class="row">
+            <div class="col-md">
+                <div class="box-form">
+                    {% with WIDGET_ERROR_CLASS='is-invalid' %}
+                        <form action="{% url 'adicionar_apostilas' %}" method="POST" enctype='multipart/form-data'>{% csrf_token %}
+                            <p class="fonte-secundaria">Adicionar resumos</p>
+                            <label for="{{ form.titulo.id_for_label }}" class="form-label">Titulo</label>
+                            {% render_field form.titulo class="form-control" placeholder="Insira o titulo" %}
+                            <div class="invalid-feedback">{{ form.titulo.errors|first }}</div>
+                            <br>
+                            <label for="{{ form.arquivo.id_for_label }}" class="form-label">Arquivo</label>
+                            {% render_field form.arquivo class="form-control"%}
+                            <div class="invalid-feedback">{{ form.arquivo.errors|first }}</div>
+                            <br>
+                            <input type="submit" class="btn-cadastro" value="Enviar">
+                        </form>
+                    {% endwith %}
+                </div>
+            </div>
+            <div class="col-md">
+                <table>
+                    <thead>
+                        <tr>
+                            <th scope="col">Titulo</th>
+                            <th scope="col">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for apostila in apostilas %}
+                            <tr class="linha">
+                                <td>{{ apostila.titulo }}</td>
+                                <td><a href="{{ apostila.arquivo.url }}" target="_blank" style="color: black; text-decoration: none;" class="btn-cadastro">Abrir</a></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <hr>
+                <p class="fonte-secundaria">Views totais: {{ views_totais }}</p>
+            </div>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="toast-container position-fixed bottom-0 end-0 p-3">
+                <div id="toastMsg" class="toast align-items-center text-{{message.tags}} border-0" role="alert"
+                    aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body fw-bold">
+                            {{message}}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                                aria-label="Close"></button>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endblock 'conteudo' %}
