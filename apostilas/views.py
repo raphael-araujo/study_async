@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 
 from apostilas.forms import ApostilasForm
 from apostilas.models import Apostila, ViewApostila
@@ -11,7 +11,6 @@ from apostilas.models import Apostila, ViewApostila
 def adicionar_apostilas(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
         form = ApostilasForm(request.POST, request.FILES)
-        print(form.data)
         if form.is_valid():
             apostila = form.save(commit=False)
             apostila.user = request.user
@@ -30,3 +29,23 @@ def adicionar_apostilas(request: HttpRequest) -> HttpResponse:
         'views_totais': views_totais,
     }
     return render(request, 'adicionar_apostilas.html', context)
+
+
+@login_required(login_url='login')
+def apostila(request: HttpRequest, id_apostila: int) -> HttpResponse:
+    apostila = get_object_or_404(Apostila, id=id_apostila)
+    view = ViewApostila.objects.create(
+        ip=request.META['REMOTE_ADDR'],
+        apostila=apostila
+    )
+    view.save()
+
+    views_unicas = ViewApostila.objects.filter(apostila=apostila).values('ip').distinct().count()
+    views_totais = ViewApostila.objects.filter(apostila=apostila).values('ip').count()
+
+    context = {
+        'apostila': apostila,
+        'views_unicas': views_unicas,
+        'views_totais': views_totais,
+    }
+    return render(request, 'apostila.html', context)
