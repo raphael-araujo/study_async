@@ -1,8 +1,8 @@
-<div id="top" style="text-align: center;"> 
+<div align="center" id="top"> 
   <h1>Study Async</h1>
 </div>
 
-<p  style="text-align: center;">
+<p align="center">
   <a href="#sobre">Sobre</a> &#xa0; | &#xa0; 
   <a href="#funcionalidades">Funcionalidades</a> &#xa0; | &#xa0;
   <a href="#tecnologias">Tecnologias</a> &#xa0; | &#xa0;
